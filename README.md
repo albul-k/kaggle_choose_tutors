@@ -1,1 +1,1 @@
-# ml_company_bankruptcy_prediction
+# ml_titanic
