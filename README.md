@@ -1,1 +1,1 @@
-# ml_titanic
+# kaggle_choose_tutors

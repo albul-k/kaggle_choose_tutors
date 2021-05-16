@@ -7,13 +7,6 @@ services:
     container_name: flask
     restart: always
     environment:
-      - APP_NAME=ml_titanic
+      - APP_NAME=kaggle_choose_tutors
     expose:
-      - 8080
-
-  nginx:
-    build: ./nginx
-    container_name: nginx
-    restart: always
-    ports:
-      - "80:80"
+      - 5000

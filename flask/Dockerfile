@@ -1,5 +1,4 @@
-# Use the Python3.7.2 image
-FROM python:3.7.7-stretch
+FROM python:3.7.7-slim-buster
 
 # Set the working directory to /app
 WORKDIR /app
@@ -11,4 +10,4 @@ ADD . /app
 RUN pip install -r requirements.txt
 
 # run the command to start uWSGI
-CMD ["uwsgi", "app.ini"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "web.wsgi:app"]

@@ -1,0 +1,50 @@
+path:
+  data: data/data.csv
+  model: model/model.dill
+  reports:
+    scores: reports/scores.md
+
+features:
+  base:
+    - age
+    - years_of_experience
+    - lesson_price
+    - qualification
+    - physics
+    - chemistry
+    - biology
+    - english
+    - geography
+    - history
+    - mean_exam_points
+  continuous:
+    - age
+    - years_of_experience
+    - lesson_price
+    - mean_exam_points
+  categorical:
+    - qualification
+    - physics
+    - chemistry
+    - biology
+    - english
+    - geography
+    - history
+  target: choose
+
+train:
+  param_model:
+    random_state: 100
+  param_distributions:
+    learning_rate: [0.01, 0.1, 0.3]
+    n_estimators: [100, 300, 500, 1000]
+    min_samples_split: [2, 3, 4]
+    max_depth: [4, 6, 8, 10]
+  param_randomized_search:
+    n_iter: 10
+    cv: 10
+    scoring: f1
+    refit: False
+  param_cross_validate:
+    cv: 10
+    scoring: ['roc_auc', 'f1', 'precision', 'recall']

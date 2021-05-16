@@ -1,4 +1,7 @@
 .vscode/
+model/
+reports/
+eda/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
