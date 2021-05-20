@@ -1,8 +1,4 @@
-path:
-  data: data/data.csv
-  model: model/model.dill
-  reports:
-    scores: reports/scores.md
+data: data/data.csv
 
 features:
   base:
