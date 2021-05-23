@@ -74,8 +74,8 @@ class Train():
         self.features_all = None
 
         os.makedirs("train", exist_ok=True)
-        self.file_out_pipeline = os.path.join("train", 'pipeline.dill')
-        self.file_out_report = os.path.join("train", 'report.md')
+        self.file_out_pipeline = os.path.join('train', 'pipeline.dill')
+        self.file_out_report = os.path.join('train', 'report.md')
         
         super().__init__()
 
@@ -170,13 +170,13 @@ class Train():
         self.fit()
         self.make_report()
 
-        with open(self.file_out_pipeline, "wb") as file:
+        with open(self.file_out_pipeline, 'wb') as file:
             dill.dump(self.pipeline, file)
 
         return
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     params = yaml.safe_load(open(os.path.join('src', 'params.yaml')))
     df = pd.read_csv(
         params['data'],

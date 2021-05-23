@@ -12,13 +12,13 @@ sys.path.append('./src/')
 
 PARAMS = yaml.safe_load(open(os.path.join('src', 'params.yaml')))
 
-# Load ML model
+# Load pipeline
 MODEL = None
-with open(PARAMS['path']['model'], 'rb') as file:
+with open(os.path.join('train', 'pipeline.dill'), 'rb') as file:
     MODEL = dill.load(file)
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"*": {"origins": "*"}})
+cors = CORS(app, resources={r'*': {'origins': '*'}})
 api = Api(app)
 
 
@@ -31,15 +31,16 @@ def predict():
         X = pd.DataFrame([list(d.values())], columns=list(d.keys()))
         try:
             y = MODEL.predict(X)[0]
-            res = make_response(jsonify({"prediction": y, "success": True}), 200)
+            proba = MODEL.predict_proba(X)[0]
+            res = make_response(jsonify({'prediction': y, 'probability': proba, 'success': True}), 200)
             return res
         except Exception as err:
-            res = make_response(jsonify({"error": err, "success": False}), 404)
+            res = make_response(jsonify({'error': err, 'success': False}), 404)
             return res
 
-    res = make_response(jsonify({"error": "The request body is not JSON", "success": False}), 400)
+    res = make_response(jsonify({'error': 'The request body is not JSON', 'success': False}), 400)
     return res
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run()
