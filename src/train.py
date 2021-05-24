@@ -161,7 +161,6 @@ class Train():
                  f"{best_params.to_markdown(headers=['param', 'value'], tablefmt='github')}\n\n" \
                  f"## Feature importances\n\n" \
                  f"{feature_importances.to_markdown(tablefmt='github')}\n"
-
         utils.save_text_data(report, self.file_out_report)
 
         return
