@@ -21,18 +21,19 @@ app = Flask(__name__)
 cors = CORS(app, resources={r'*': {'origins': '*'}})
 api = Api(app)
 
+@app.route('/check', methods=['GET'])
+def check():
+    return "It's work!"
 
 @app.route('/predict', methods=['POST'])
 def predict():
 
     if request.is_json:
         
-        d: dict = {key: request.json.get(key) for key, value in PARAMS['features']['base']}
-        X = pd.DataFrame([list(d.values())], columns=list(d.keys()))
+        X = pd.DataFrame([list(request.json.values())], columns=list(request.json.keys()))
         try:
-            y = MODEL.predict(X)[0]
-            proba = MODEL.predict_proba(X)[0]
-            res = make_response(jsonify({'prediction': y, 'probability': proba, 'success': True}), 200)
+            probability = MODEL.predict_proba(X)[0][1]
+            res = make_response(jsonify({'probability': probability, 'success': True}), 200)
             return res
         except Exception as err:
             res = make_response(jsonify({'error': err, 'success': False}), 404)
