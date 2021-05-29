@@ -1,6 +1,6 @@
 name: Docker Image CI
 env:
-  RELEASE_IMAGE: $GITHUB_REPOSITORY:latest
+  RELEASE_IMAGE: ${{ $GITHUB_REPOSITORY }}:latest
 
 on:
   push:
