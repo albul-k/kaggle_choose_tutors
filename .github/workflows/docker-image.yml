@@ -21,4 +21,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ml_choose_tutors_backend:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/ml_choose_tutors_backend:latest
