@@ -1,6 +1,6 @@
 .vscode/
 model/
-train/
+# train/
 eda/
 
 # Byte-compiled / optimized / DLL files
