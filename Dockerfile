@@ -1,4 +1,6 @@
 FROM python:3.7.7-slim-buster
+LABEL "repository"="https://github.com/albul-k/ml_choose_tutors_backend"
+LABEL "maintainer"="Konstantin Albul"
 
 EXPOSE 5000
 
