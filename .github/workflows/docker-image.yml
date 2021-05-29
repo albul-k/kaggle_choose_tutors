@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-    - run: docker build . --file Dockerfile --tag $RELEASE_IMAGE
+      run: docker build . --file Dockerfile --tag $RELEASE_IMAGE
 
   push_to_registry:
     name: Push Docker image to Docker Hub
