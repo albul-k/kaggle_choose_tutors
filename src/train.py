@@ -1,20 +1,16 @@
 import os
 import yaml
-import pandas as pd
 import dill
-
-import utils
-
 import pandas as pd
 import numpy as np
 
 from sklearn.ensemble import GradientBoostingClassifier
-
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import cross_validate, RandomizedSearchCV
-
 from sklearn.preprocessing import StandardScaler
+
+import utils
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
@@ -76,7 +72,7 @@ class Train():
         os.makedirs("train", exist_ok=True)
         self.file_out_pipeline = os.path.join('train', 'pipeline.dill')
         self.file_out_report = os.path.join('train', 'report.md')
-        
+
         super().__init__()
 
     def fit(self) -> None:
@@ -98,7 +94,8 @@ class Train():
 
         feats = FeatureUnion(final_transformers)
 
-        self.features_all = self.features['categorical'] + self.features['continuous']
+        self.features_all = self.features['categorical'] + \
+            self.features['continuous']
         X = self.data[self.features_all]
         y = self.data[self.features['target']]
 
@@ -114,7 +111,8 @@ class Train():
         )
         rs.fit(X, y)
 
-        self.best_params = {key.split('__')[1]: value for key, value in rs.best_params_.items()}
+        self.best_params = {
+            key.split('__')[1]: value for key, value in rs.best_params_.items()}
 
         self.pipeline = Pipeline([
             ('features', feats),
@@ -135,14 +133,15 @@ class Train():
             self.data[self.features['target']],
             **self.params['param_cross_validate']
         )
-        
+
         best_params = pd.DataFrame.from_dict(
             self.best_params,
             orient='index'
         )
-        
+
         feature_importances = pd.DataFrame(
-            zip(self.features_all, self.pipeline.named_steps['gb_clf'].feature_importances_),
+            zip(self.features_all,
+                self.pipeline.named_steps['gb_clf'].feature_importances_),
             columns=['feature', 'importance']
         )
         feature_importances.sort_values(
