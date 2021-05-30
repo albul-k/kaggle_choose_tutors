@@ -10,8 +10,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import cross_validate, RandomizedSearchCV
 from sklearn.preprocessing import StandardScaler
 
-# import utils
-
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
     def __init__(self, column):
