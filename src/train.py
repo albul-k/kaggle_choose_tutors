@@ -1,8 +1,8 @@
 import os
 import yaml
 import dill
-import pandas as pd
-import numpy as np
+import pandas
+import numpy
 
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.pipeline import Pipeline, FeatureUnion
@@ -10,7 +10,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import cross_validate, RandomizedSearchCV
 from sklearn.preprocessing import StandardScaler
 
-import utils
+# import utils
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
@@ -46,12 +46,12 @@ class OHEEncoder(BaseEstimator, TransformerMixin):
         self.columns = []
 
     def fit(self, X, y=None):
-        self.columns = [col for col in pd.get_dummies(
+        self.columns = [col for col in pandas.get_dummies(
             X, prefix=self.key).columns]
         return self
 
     def transform(self, X):
-        X = pd.get_dummies(X, prefix=self.key)
+        X = pandas.get_dummies(X, prefix=self.key)
         test_columns = [col for col in X.columns]
         for col_ in self.columns:
             if col_ not in test_columns:
@@ -134,12 +134,12 @@ class Train():
             **self.params['param_cross_validate']
         )
 
-        best_params = pd.DataFrame.from_dict(
+        best_params = pandas.DataFrame.from_dict(
             self.best_params,
             orient='index'
         )
 
-        feature_importances = pd.DataFrame(
+        feature_importances = pandas.DataFrame(
             zip(self.features_all,
                 self.pipeline.named_steps['gb_clf'].feature_importances_),
             columns=['feature', 'importance']
@@ -152,15 +152,17 @@ class Train():
 
         report = f"# Report\n\n" \
                  f"## Metrics\n\n" \
-                 f"* roc_auc: {np.mean(score['test_roc_auc'])}\n" \
-                 f"* f1: {np.mean(score['test_f1'])}\n" \
-                 f"* precision: {np.mean(score['test_precision'])}\n" \
-                 f"* recall: {np.mean(score['test_recall'])}\n\n" \
+                 f"* roc_auc: {numpy.mean(score['test_roc_auc'])}\n" \
+                 f"* f1: {numpy.mean(score['test_f1'])}\n" \
+                 f"* precision: {numpy.mean(score['test_precision'])}\n" \
+                 f"* recall: {numpy.mean(score['test_recall'])}\n\n" \
                  f"## Best parameters\n\n" \
                  f"{best_params.to_markdown(headers=['param', 'value'], tablefmt='github')}\n\n" \
                  f"## Feature importances\n\n" \
                  f"{feature_importances.to_markdown(tablefmt='github')}\n"
-        utils.save_text_data(report, self.file_out_report)
+
+        with open(self.file_out_report, 'w') as file:
+            file.write(report)
 
         return
 
@@ -175,8 +177,8 @@ class Train():
 
 
 if __name__ == '__main__':
-    params = yaml.safe_load(open(os.path.join('src', 'params.yaml')))
-    df = pd.read_csv(
+    params = yaml.safe_load(open('params.yaml'))
+    df = pandas.read_csv(
         params['data'],
     )
 
