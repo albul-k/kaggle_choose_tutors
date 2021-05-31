@@ -5,10 +5,11 @@ import pandas
 import numpy
 
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline, FeatureUnion, make_pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import cross_validate, RandomizedSearchCV
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
@@ -38,25 +39,6 @@ class NumberSelector(BaseEstimator, TransformerMixin):
         return X[[self.key]]
 
 
-class OHEEncoder(BaseEstimator, TransformerMixin):
-    def __init__(self, key):
-        self.key = key
-        self.columns = []
-
-    def fit(self, X, y=None):
-        self.columns = [col for col in pandas.get_dummies(
-            X, prefix=self.key).columns]
-        return self
-
-    def transform(self, X):
-        X = pandas.get_dummies(X, prefix=self.key)
-        test_columns = [col for col in X.columns]
-        for col_ in self.columns:
-            if col_ not in test_columns:
-                X[col_] = 0
-        return X[self.columns]
-
-
 class Train():
 
     def __init__(self, data: str, features: str, params: dict) -> None:
@@ -74,23 +56,38 @@ class Train():
         super().__init__()
 
     def fit(self) -> None:
-        final_transformers = list()
 
-        for cat_col in self.features['categorical']:
-            cat_transformer = Pipeline([
-                ('selector', FeatureSelector(column=cat_col)),
-                ('ohe', OHEEncoder(key=cat_col))
-            ])
-            final_transformers.append((cat_col, cat_transformer))
+        # final_transformers = list()
 
-        for cont_col in self.features['continuous']:
-            cont_transformer = Pipeline([
-                ('selector', NumberSelector(key=cont_col)),
-                ('standard', StandardScaler())
-            ])
-            final_transformers.append((cont_col, cont_transformer))
+        # for cat_col in self.features['categorical']:
+        #     cat_transformer = Pipeline([
+        #         ('selector', FeatureSelector(column=cat_col)),
+        #         ('ohe', OHEEncoder(key=cat_col))
+        #     ])
+        #     final_transformers.append((cat_col, cat_transformer))
 
-        feats = FeatureUnion(final_transformers)
+        # for cont_col in self.features['continuous']:
+        #     cont_transformer = Pipeline([
+        #         ('selector', NumberSelector(key=cont_col)),
+        #         ('standard', StandardScaler())
+        #     ])
+        #     final_transformers.append((cont_col, cont_transformer))
+
+        # continuous_transformer = Pipeline(
+        #     steps=[
+        #         ('standard', StandardScaler())
+        # ])
+
+        # categorical_transformer = OneHotEncoder(handle_unknown='ignore')
+
+        # preprocessor = ColumnTransformer(
+        #     transformers=[
+        #         ('num', continuous_transformer, self.features['continuous']),
+        #         ('cat', categorical_transformer, self.features['categorical'])])
+        feats = FeatureUnion([
+                        ('numeric', make_pipeline(FeatureSelector(column=self.features['continuous']), StandardScaler())),
+                        ('categorical', make_pipeline(FeatureSelector(column=self.features['categorical']), OneHotEncoder(handle_unknown='ignore')))
+                    ])
 
         self.features_all = self.features['categorical'] + \
             self.features['continuous']
@@ -98,26 +95,28 @@ class Train():
         y = self.data[self.features['target']]
 
         rs = RandomizedSearchCV(
-            Pipeline([
-                ('features', feats),
-                ('classifier', GradientBoostingClassifier(
-                    **self.params['param_model'])),
-            ]),
+            Pipeline(
+                steps=[
+                    ('features', feats),
+                    ('classifier', GradientBoostingClassifier(
+                        **self.params['param_model'])),
+                ]),
             {'classifier__' + key: value for key,
                 value in self.params['param_distributions'].items()},
             **self.params['param_randomized_search'],
         )
         rs.fit(X, y)
 
-        self.best_params = {
+        self.best_params={
             key.split('__')[1]: value for key, value in rs.best_params_.items()}
 
-        self.pipeline = Pipeline([
-            ('features', feats),
-            ('gb_clf', GradientBoostingClassifier(
-                **self.params['param_model'],
-                **self.best_params,
-            )),
+        self.pipeline=Pipeline(
+            steps=[
+                ('features', feats),
+                ('gb_clf', GradientBoostingClassifier(
+                    **self.params['param_model'],
+                    **self.best_params,
+                )),
         ])
         self.pipeline.fit(X, y)
         del X, y
@@ -125,19 +124,19 @@ class Train():
         return
 
     def make_report(self) -> None:
-        score = cross_validate(
+        score=cross_validate(
             self.pipeline,
             self.data[self.features_all],
             self.data[self.features['target']],
             **self.params['param_cross_validate']
         )
 
-        best_params = pandas.DataFrame.from_dict(
+        best_params=pandas.DataFrame.from_dict(
             self.best_params,
             orient='index'
         )
 
-        feature_importances = pandas.DataFrame(
+        feature_importances=pandas.DataFrame(
             zip(self.features_all,
                 self.pipeline.named_steps['gb_clf'].feature_importances_),
             columns=['feature', 'importance']
@@ -148,7 +147,7 @@ class Train():
             inplace=True
         )
 
-        report = f"# Report\n\n" \
+        report=  f"# Report\n\n" \
                  f"## Metrics\n\n" \
                  f"* roc_auc: {numpy.mean(score['test_roc_auc'])}\n" \
                  f"* f1: {numpy.mean(score['test_f1'])}\n" \
@@ -175,12 +174,12 @@ class Train():
 
 
 if __name__ == '__main__':
-    params = yaml.safe_load(open('params.yaml'))
-    df = pandas.read_csv(
+    params=yaml.safe_load(open('params.yaml'))
+    df=pandas.read_csv(
         params['data'],
     )
 
-    train = Train(
+    train=Train(
         data=df,
         features=params['features'],
         params=params['train'],

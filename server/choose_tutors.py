@@ -3,7 +3,6 @@ from flask_restful import Api
 from flask_cors import CORS
 
 import os
-import yaml
 import pandas
 import dill
 import logging
@@ -13,11 +12,9 @@ from time import strftime
 import sys
 sys.path.append('./src/')
 
-PARAMS = yaml.safe_load(open(os.path.join('src', 'params.yaml')))
-
 # Load pipeline
 MODEL = None
-with open(os.path.join('train', 'pipeline.dill'), 'rb') as file:
+with open(os.path.join('src', 'train', 'pipeline.dill'), 'rb') as file:
     MODEL = dill.load(file)
 
 handler = RotatingFileHandler(
