@@ -31,10 +31,6 @@ The goal is to predict the probability for a tutor to be a proper one for prepar
 * history [0|1] - the tutor has experience in history
 * mean_exam_points [30-100] - the average score of students for a given tutor
 
-## Model used
-
-GradientBoostingClassifier
-
 ## How to run
 
 ### Pull the Docker image and run it
