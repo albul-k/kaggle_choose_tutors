@@ -39,9 +39,18 @@ class Train():
         super().__init__()
 
     def fit(self) -> None:
+        numeric_pipeline = make_pipeline(
+            FeatureSelector(column=self.features['continuous']),
+            StandardScaler()
+        )
+
+        categorical_pipeline = make_pipeline(
+            FeatureSelector(column=self.features['categorical']),
+            OneHotEncoder(handle_unknown='ignore')
+        )
         feats = FeatureUnion([
-            ('numeric', make_pipeline(FeatureSelector(column=self.features['continuous']), StandardScaler())),
-            ('categorical', make_pipeline(FeatureSelector(column=self.features['categorical']), OneHotEncoder(handle_unknown='ignore')))
+            ('numeric', numeric_pipeline),
+            ('categorical', categorical_pipeline)
         ])
 
         self.features_all = self.features['categorical'] + \
@@ -56,41 +65,40 @@ class Train():
                     ('classifier', GradientBoostingClassifier(
                         **self.params['param_model'])),
                 ]),
-            {'classifier__' + key: value for key,
-                value in self.params['param_distributions'].items()},
+            {'classifier__' + key: value for key, value in self.params['param_distributions'].items()},
             **self.params['param_randomized_search'],
         )
         rs.fit(X, y)
 
-        self.best_params={key.split('__')[1]: value for key, value in rs.best_params_.items()}
-
-        self.pipeline=Pipeline(
+        self.best_params = {key.split('__')[1]: value for key, value in rs.best_params_.items()}
+        self.pipeline = Pipeline(
             steps=[
                 ('features', feats),
                 ('gb_clf', GradientBoostingClassifier(
                     **self.params['param_model'],
                     **self.best_params,
                 )),
-        ])
+            ]
+        )
         self.pipeline.fit(X, y)
         del X, y
 
         return
 
     def make_report(self) -> None:
-        score=cross_validate(
+        score = cross_validate(
             self.pipeline,
             self.data[self.features_all],
             self.data[self.features['target']],
             **self.params['param_cross_validate']
         )
 
-        best_params=pandas.DataFrame.from_dict(
+        best_params = pandas.DataFrame.from_dict(
             self.best_params,
             orient='index'
         )
 
-        feature_importances=pandas.DataFrame(
+        feature_importances = pandas.DataFrame(
             zip(self.features_all,
                 self.pipeline.named_steps['gb_clf'].feature_importances_),
             columns=['feature', 'importance']
@@ -101,7 +109,7 @@ class Train():
             inplace=True
         )
 
-        report=  f"# Report\n\n" \
+        report = f"# Report\n\n" \
                  f"## Metrics\n\n" \
                  f"* roc_auc: {numpy.mean(score['test_roc_auc'])}\n" \
                  f"* f1: {numpy.mean(score['test_f1'])}\n" \
@@ -128,12 +136,12 @@ class Train():
 
 
 if __name__ == '__main__':
-    params=yaml.safe_load(open('params.yaml'))
-    df=pandas.read_csv(
+    params = yaml.safe_load(open('params.yaml'))
+    df = pandas.read_csv(
         params['data'],
     )
 
-    train=Train(
+    train = Train(
         data=df,
         features=params['features'],
         params=params['train'],

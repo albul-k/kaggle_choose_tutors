@@ -1,15 +1,14 @@
+import os
+import dill
+import logging
+import sys
 from flask import Flask, request, make_response, jsonify
 from flask_restful import Api
 from flask_cors import CORS
-
-import os
-import pandas
-import dill
-import logging
 from logging.handlers import RotatingFileHandler
 from time import strftime
+import pandas
 
-import sys
 sys.path.append('./src/')
 
 # Load pipeline
@@ -38,8 +37,10 @@ def predict():
 
     if request.is_json:
 
-        X = pandas.DataFrame([list(request.json.values())],
-                         columns=list(request.json.keys()))
+        X = pandas.DataFrame(
+            [list(request.json.values())],
+            columns=list(request.json.keys())
+        )
         dt = strftime("[%Y-%b-%d %H:%M:%S]")
         logger.info(f'{dt} Data: {str(request.json)}')
         try:
