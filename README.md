@@ -1,6 +1,6 @@
 # Project name: ml_choose_tutors_backend
 
-[![pylint](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/pylint.yaml/badge.svg?branch=ci-pylint)](https://github.com/albul-k/ml_choose_tutors_backend/actions)
+[![pylint](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/pylint.yml/badge.svg?branch=ci-pylint)](https://github.com/albul-k/ml_choose_tutors_backend/actions)
 
 ## Used stack
 
