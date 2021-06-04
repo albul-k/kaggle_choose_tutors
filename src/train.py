@@ -1,3 +1,6 @@
+"""Train pipeline
+"""
+
 import os
 import yaml
 import dill
@@ -12,17 +15,40 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
+    """Feature selector class
+
+    Args:
+        BaseEstimator (class): base estimator class
+        TransformerMixin (class): class for transformers
+    """
     def __init__(self, column):
         self.column = column
 
-    def fit(self, X, y=None):
+    def fit(self):
+        """Fit
+
+        Returns:
+            self:
+        """
         return self
 
-    def transform(self, X, y=None):
-        return X[self.column]
+    def transform(self, data):
+        """Transform
+
+        Args:
+            data (pandas.DataFrame): some data
+
+        Returns:
+            pandas.DataFrame:
+        """
+        return data[self.column]
 
 
 class Train():
+    """Train class
+    """
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, data: str, features: str, params: dict) -> None:
         self.data = data
@@ -39,58 +65,68 @@ class Train():
         super().__init__()
 
     def fit(self) -> None:
+        """Fit model
+        """
+        numeric_pipeline = make_pipeline(
+            FeatureSelector(column=self.features['continuous']),
+            StandardScaler()
+        )
+
+        categorical_pipeline = make_pipeline(
+            FeatureSelector(column=self.features['categorical']),
+            OneHotEncoder(handle_unknown='ignore')
+        )
         feats = FeatureUnion([
-            ('numeric', make_pipeline(FeatureSelector(column=self.features['continuous']), StandardScaler())),
-            ('categorical', make_pipeline(FeatureSelector(column=self.features['categorical']), OneHotEncoder(handle_unknown='ignore')))
+            ('numeric', numeric_pipeline),
+            ('categorical', categorical_pipeline)
         ])
 
         self.features_all = self.features['categorical'] + \
             self.features['continuous']
-        X = self.data[self.features_all]
-        y = self.data[self.features['target']]
+        data = self.data[self.features_all]
+        target = self.data[self.features['target']]
 
-        rs = RandomizedSearchCV(
+        random_search = RandomizedSearchCV(
             Pipeline(
                 steps=[
                     ('features', feats),
                     ('classifier', GradientBoostingClassifier(
                         **self.params['param_model'])),
                 ]),
-            {'classifier__' + key: value for key,
-                value in self.params['param_distributions'].items()},
+            {'classifier__' + k: v for k, v in self.params['param_distributions'].items()},
             **self.params['param_randomized_search'],
         )
-        rs.fit(X, y)
+        random_search.fit(data, target)
 
-        self.best_params={key.split('__')[1]: value for key, value in rs.best_params_.items()}
-
-        self.pipeline=Pipeline(
+        self.best_params = {k.split('__')[1]: v for k, v in random_search.best_params_.items()}
+        self.pipeline = Pipeline(
             steps=[
                 ('features', feats),
                 ('gb_clf', GradientBoostingClassifier(
                     **self.params['param_model'],
                     **self.best_params,
                 )),
-        ])
-        self.pipeline.fit(X, y)
-        del X, y
-
-        return
+            ]
+        )
+        self.pipeline.fit(data, target)
+        del data, target
 
     def make_report(self) -> None:
-        score=cross_validate(
+        """Generate report
+        """
+        score = cross_validate(
             self.pipeline,
             self.data[self.features_all],
             self.data[self.features['target']],
             **self.params['param_cross_validate']
         )
 
-        best_params=pandas.DataFrame.from_dict(
+        best_params = pandas.DataFrame.from_dict(
             self.best_params,
             orient='index'
         )
 
-        feature_importances=pandas.DataFrame(
+        feature_importances = pandas.DataFrame(
             zip(self.features_all,
                 self.pipeline.named_steps['gb_clf'].feature_importances_),
             columns=['feature', 'importance']
@@ -101,7 +137,7 @@ class Train():
             inplace=True
         )
 
-        report=  f"# Report\n\n" \
+        report = f"# Report\n\n" \
                  f"## Metrics\n\n" \
                  f"* roc_auc: {numpy.mean(score['test_roc_auc'])}\n" \
                  f"* f1: {numpy.mean(score['test_f1'])}\n" \
@@ -115,27 +151,23 @@ class Train():
         with open(self.file_out_report, 'w') as file:
             file.write(report)
 
-        return
-
     def run(self) -> None:
+        """Run train
+        """
         self.fit()
         self.make_report()
 
         with open(self.file_out_pipeline, 'wb') as file:
             dill.dump(self.pipeline, file)
 
-        return
-
 
 if __name__ == '__main__':
-    params=yaml.safe_load(open('params.yaml'))
-    df=pandas.read_csv(
-        params['data'],
+    PARAMS = yaml.safe_load(open('params.yaml'))
+    TRAIN = Train(
+        data=pandas.read_csv(
+            PARAMS['data'],
+        ),
+        features=PARAMS['features'],
+        params=PARAMS['train'],
     )
-
-    train=Train(
-        data=df,
-        features=params['features'],
-        params=params['train'],
-    )
-    train.run()
+    TRAIN.run()
