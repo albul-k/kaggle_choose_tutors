@@ -1,5 +1,7 @@
 # Project name: ml_choose_tutors_backend
 
+[![pylint](https://github.com/albul-k/ml_choose_tutors_frontend/actions/workflows/pylint.yaml/badge.svg?branch=ci-pylint)](https://github.com/albul-k/ml_choose_tutors_frontend/actions)
+
 ## Used stack
 
 * ML: sklearn, pandas, numpy
