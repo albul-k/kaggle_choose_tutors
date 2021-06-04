@@ -24,7 +24,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     def __init__(self, column):
         self.column = column
 
-    def fit(self, *args, **kwargs):
+    def fit(self):
         """Fit
 
         Returns:
@@ -32,7 +32,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         """
         return self
 
-    def transform(self, data, *args, **kwargs):
+    def transform(self, data):
         """Transform
 
         Args:
@@ -65,6 +65,8 @@ class Train():
         super().__init__()
 
     def fit(self) -> None:
+        """Fit model
+        """
         numeric_pipeline = make_pipeline(
             FeatureSelector(column=self.features['continuous']),
             StandardScaler()
@@ -109,9 +111,9 @@ class Train():
         self.pipeline.fit(data, target)
         del data, target
 
-        return
-
     def make_report(self) -> None:
+        """Generate report
+        """
         score = cross_validate(
             self.pipeline,
             self.data[self.features_all],
@@ -149,25 +151,23 @@ class Train():
         with open(self.file_out_report, 'w') as file:
             file.write(report)
 
-        return
-
     def run(self) -> None:
+        """Run train
+        """
         self.fit()
         self.make_report()
 
         with open(self.file_out_pipeline, 'wb') as file:
             dill.dump(self.pipeline, file)
 
-        return
-
 
 if __name__ == '__main__':
-    params = yaml.safe_load(open('params.yaml'))
-    train = Train(
+    PARAMS = yaml.safe_load(open('params.yaml'))
+    TRAIN = Train(
         data=pandas.read_csv(
-            params['data'],
+            PARAMS['data'],
         ),
-        features=params['features'],
-        params=params['train'],
+        features=PARAMS['features'],
+        params=PARAMS['train'],
     )
-    train.run()
+    TRAIN.run()
