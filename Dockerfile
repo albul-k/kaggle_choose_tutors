@@ -11,7 +11,7 @@ WORKDIR /usr/src/choose_tutors
 RUN python -m pip install --upgrade pip
 
 # Install the dependencies
-ADD requirements.txt .
+ADD requirements.txt ./src
 RUN pip install -r requirements.txt
 
 COPY . .
