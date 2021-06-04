@@ -1,4 +1,7 @@
-from .choose_tutors import app
+"""
+Start point for flask app
+"""
+from choose_tutors import APP
 
 if __name__ == "__main__":
-    app.run()
+    APP.run()

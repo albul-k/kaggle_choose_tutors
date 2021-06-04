@@ -1,3 +1,6 @@
+"""Train pipeline
+"""
+
 import os
 import yaml
 import dill
@@ -12,17 +15,40 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
+    """Feature selector class
+
+    Args:
+        BaseEstimator (class): base estimator class
+        TransformerMixin (class): class for transformers
+    """
     def __init__(self, column):
         self.column = column
 
-    def fit(self, X, y=None):
+    def fit(self, *args, **kwargs):
+        """Fit
+
+        Returns:
+            self:
+        """
         return self
 
-    def transform(self, X, y=None):
-        return X[self.column]
+    def transform(self, data, *args, **kwargs):
+        """Transform
+
+        Args:
+            data (pandas.DataFrame): some data
+
+        Returns:
+            pandas.DataFrame:
+        """
+        return data[self.column]
 
 
 class Train():
+    """Train class
+    """
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, data: str, features: str, params: dict) -> None:
         self.data = data
@@ -55,22 +81,22 @@ class Train():
 
         self.features_all = self.features['categorical'] + \
             self.features['continuous']
-        X = self.data[self.features_all]
-        y = self.data[self.features['target']]
+        data = self.data[self.features_all]
+        target = self.data[self.features['target']]
 
-        rs = RandomizedSearchCV(
+        random_search = RandomizedSearchCV(
             Pipeline(
                 steps=[
                     ('features', feats),
                     ('classifier', GradientBoostingClassifier(
                         **self.params['param_model'])),
                 ]),
-            {'classifier__' + key: value for key, value in self.params['param_distributions'].items()},
+            {'classifier__' + k: v for k, v in self.params['param_distributions'].items()},
             **self.params['param_randomized_search'],
         )
-        rs.fit(X, y)
+        random_search.fit(data, target)
 
-        self.best_params = {key.split('__')[1]: value for key, value in rs.best_params_.items()}
+        self.best_params = {k.split('__')[1]: v for k, v in random_search.best_params_.items()}
         self.pipeline = Pipeline(
             steps=[
                 ('features', feats),
@@ -80,8 +106,8 @@ class Train():
                 )),
             ]
         )
-        self.pipeline.fit(X, y)
-        del X, y
+        self.pipeline.fit(data, target)
+        del data, target
 
         return
 
@@ -137,12 +163,10 @@ class Train():
 
 if __name__ == '__main__':
     params = yaml.safe_load(open('params.yaml'))
-    df = pandas.read_csv(
-        params['data'],
-    )
-
     train = Train(
-        data=df,
+        data=pandas.read_csv(
+            params['data'],
+        ),
         features=params['features'],
         params=params['train'],
     )
