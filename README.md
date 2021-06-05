@@ -1,7 +1,8 @@
-# Project name: ml_choose_tutors_backend
+# ml_choose_tutors_backend
+
+Python ML project
 
 [![pylint](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/pylint.yml/badge.svg?branch=main)](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/pylint.yml)
-
 [![docker-ci](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/docker-image.yml/badge.svg?branch=main)](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/docker-image.yml)
 
 ## Used stack
