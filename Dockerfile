@@ -17,4 +17,4 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # run the command to start uWSGI
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "src.wsgi:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "src.choose_tutors:APP"]
