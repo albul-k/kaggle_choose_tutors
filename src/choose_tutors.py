@@ -8,8 +8,8 @@ from time import strftime
 import sys
 import dill
 from flask import Flask, request, make_response, jsonify
-# from flask_restful import Api
-# from flask_cors import CORS
+from flask_restful import Api
+from flask_cors import CORS
 import pandas
 
 sys.path.append('./src/')
@@ -20,14 +20,17 @@ with open(os.path.join('src', 'train', 'pipeline.dill'), 'rb') as file:
     MODEL = dill.load(file)
 
 HANDLER = RotatingFileHandler(
-    filename='app.log', maxBytes=100000, backupCount=10)
+    filename='app.log',
+    maxBytes=100000,
+    backupCount=10
+)
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 LOGGER.addHandler(HANDLER)
 
 APP = Flask(__name__)
-# CORS = CORS(APP, resources={r'*': {'origins': '*'}})
-# api = Api(APP)
+APP_CORS = CORS(APP, resources={r'*': {'origins': '*'}})
+API = Api(APP)
 
 
 @APP.route('/predict', methods=['POST'])
