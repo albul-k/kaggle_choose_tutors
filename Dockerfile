@@ -11,10 +11,12 @@ WORKDIR /usr/src/choose_tutors
 RUN python -m pip install --upgrade pip
 
 # Install the dependencies
-ADD requirements.txt .
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY . .
+COPY src/ src/
+COPY run_app.py .
+COPY model/ model/
 
 # run the command to start uWSGI
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "src.choose_tutors:APP"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run_app:APP"]

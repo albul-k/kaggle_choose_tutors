@@ -1,13 +1,131 @@
 openapi: '3.0.2'
 info:
-  title: API Title
-  version: '1.0'
+  title: ML choose tutors
+  description: Sklearn model
+  contact:
+    email: konstantin.albul@gmail.com
+  version: 0.0.1
 servers:
-  - url: http://localhost:5000
+- url: http://127.0.0.1:5000/
+  description: Test server
 paths:
   /predict:
     post:
+      summary: Predict endpoint
+      operationId: predict
+      requestBody:
+        description: Request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/predictInput'
+        required: true
       responses:
-        '200':
-          description: OK
+        default:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/predictOutput'
 
+components:
+  schemas:
+    predictInput:
+      type: object
+      properties:
+        age: 
+          type: integer
+          format: int32
+          description: Age
+        years_of_experience: 
+          type: integer
+          format: int32
+          description: number of years of work experience
+        lesson_price: 
+          type: integer
+          format: int32
+          description: price for lesson
+        qualification: 
+          type: integer
+          format: int32
+          description: qualification of tutor
+        physics: 
+          type: integer
+          format: int32
+          description: the tutor has experience in physics
+        chemistry: 
+          type: integer
+          format: int32
+          description: the tutor has experience in chemistry
+        biology: 
+          type: integer
+          format: int32
+          description: the tutor has experience in biology
+        english: 
+          type: integer
+          format: int32
+          description: the tutor has experience in english
+        geography: 
+          type: integer
+          format: int32
+          description: the tutor has experience in geography
+        history: 
+          type: integer
+          format: int32
+          description:  the tutor has experience in history
+        mean_exam_points: 
+          type: integer
+          format: int32
+          description: the average score of students for a given tutor
+      example:
+        age: 50
+        years_of_experience: 5
+        lesson_price: 1000
+        qualification: 2
+        physics: 0
+        chemistry: 1
+        biology: 1
+        english: 1
+        geography: 0
+        history: 0
+        mean_exam_points: 70
+
+    predictOutput:
+      type: object
+      properties:
+        message: 
+          type: object
+          properties: 
+            predicted_class: 
+              type: integer
+              format: int32
+              description: Predicted class [0|1]
+            probability: 
+              type: integer
+              format: int32
+              description: Probability of class 1
+        status_code: 
+          type: integer
+          format: int32
+          description: HTTP response code
+      example:
+        message:
+          predicted_class: 1
+          probability: 99.79
+        status_code: 200
+
+    OutputFalse:
+      type: object
+      properties:
+        errors: 
+          type: array
+          items: 
+            type: string
+        status_code: 
+          type: integer
+          format: int32
+          description: HTTP response code
+      example:
+        errors:
+          - "The request body is not JSON"
+        status_code: 404
