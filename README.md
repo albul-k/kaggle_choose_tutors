@@ -1,6 +1,4 @@
-# ml_choose_tutors_backend
-
-Python ML project
+# ML Choose tutors (backend)
 
 [![pylint](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/pylint.yml/badge.svg?branch=main)](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/pylint.yml)
 [![docker-ci](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/docker-image.yml/badge.svg?branch=main)](https://github.com/albul-k/ml_choose_tutors_backend/actions/workflows/docker-image.yml)
@@ -8,7 +6,7 @@ Python ML project
 ## Used stack
 
 * ML: sklearn, pandas, numpy
-* API: REST (Flask)
+* Web: Flask
 
 ### Model: GradientBoostingClassifier
 
@@ -41,10 +39,13 @@ The goal is to predict the probability for a tutor to be a proper one for prepar
 ### Pull the Docker image and run it
 
 ```bash
-#!/bin/bash
 docker pull albulk/ml_choose_tutors_backend:latest
 docker run -d -p 5000:5000 albulk/ml_choose_tutors_backend
 ```
+
+## REST API
+
+### Link to [API](https://github.com/albul-k/ml_choose_tutors_backend/blob/main/openapi.yml)
 
 ## Link to the frontend part
 

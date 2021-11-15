@@ -4,8 +4,8 @@
 import os
 import yaml
 import dill
-import pandas
-import numpy
+import pandas as pd
+import numpy as np
 
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.pipeline import Pipeline, FeatureUnion, make_pipeline
@@ -21,52 +21,46 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         BaseEstimator (class): base estimator class
         TransformerMixin (class): class for transformers
     """
+
     def __init__(self, column):
         self.column = column
 
-    def fit(self):
+    # pylint: disable=invalid-name
+    # pylint: disable=unused-argument
+    def fit(self, X, y=None):
         """Fit
-
-        Returns:
-            self:
         """
         return self
 
     def transform(self, data):
         """Transform
-
-        Args:
-            data (pandas.DataFrame): some data
-
-        Returns:
-            pandas.DataFrame:
         """
+
         return data[self.column]
 
 
+# pylint: disable=too-many-instance-attributes
 class Train():
     """Train class
     """
 
-    # pylint: disable=too-many-instance-attributes
+    pipeline = None
+    best_params = None
+    features_all = None
 
     def __init__(self, data: str, features: str, params: dict) -> None:
         self.data = data
         self.features = features
         self.params = params
-        self.pipeline = None
-        self.best_params = None
-        self.features_all = None
 
-        os.makedirs("train", exist_ok=True)
-        self.file_out_pipeline = os.path.join('train', 'pipeline.dill')
-        self.file_out_report = os.path.join('train', 'report.md')
-
-        super().__init__()
+        os.makedirs("model", exist_ok=True)
+        self.file_out_pipeline = os.path.join('model', 'pipeline.dill')
+        self.file_out_report = os.path.join('model', 'report.md')
 
     def fit(self) -> None:
         """Fit model
         """
+
         numeric_pipeline = make_pipeline(
             FeatureSelector(column=self.features['continuous']),
             StandardScaler()
@@ -114,6 +108,7 @@ class Train():
     def make_report(self) -> None:
         """Generate report
         """
+
         score = cross_validate(
             self.pipeline,
             self.data[self.features_all],
@@ -121,12 +116,12 @@ class Train():
             **self.params['param_cross_validate']
         )
 
-        best_params = pandas.DataFrame.from_dict(
+        best_params = pd.DataFrame.from_dict(
             self.best_params,
             orient='index'
         )
 
-        feature_importances = pandas.DataFrame(
+        feature_importances = pd.DataFrame(
             zip(self.features_all,
                 self.pipeline.named_steps['gb_clf'].feature_importances_),
             columns=['feature', 'importance']
@@ -139,21 +134,22 @@ class Train():
 
         report = f"# Report\n\n" \
                  f"## Metrics\n\n" \
-                 f"* roc_auc: {numpy.mean(score['test_roc_auc'])}\n" \
-                 f"* f1: {numpy.mean(score['test_f1'])}\n" \
-                 f"* precision: {numpy.mean(score['test_precision'])}\n" \
-                 f"* recall: {numpy.mean(score['test_recall'])}\n\n" \
+                 f"* roc_auc: {np.mean(score['test_roc_auc'])}\n" \
+                 f"* f1: {np.mean(score['test_f1'])}\n" \
+                 f"* precision: {np.mean(score['test_precision'])}\n" \
+                 f"* recall: {np.mean(score['test_recall'])}\n\n" \
                  f"## Best parameters\n\n" \
                  f"{best_params.to_markdown(headers=['param', 'value'], tablefmt='github')}\n\n" \
                  f"## Feature importances\n\n" \
                  f"{feature_importances.to_markdown(tablefmt='github')}\n"
 
-        with open(self.file_out_report, 'w') as file:
+        with open(self.file_out_report, 'w', encoding='utf-8') as file:
             file.write(report)
 
     def run(self) -> None:
         """Run train
         """
+
         self.fit()
         self.make_report()
 
@@ -161,13 +157,22 @@ class Train():
             dill.dump(self.pipeline, file)
 
 
-if __name__ == '__main__':
-    PARAMS = yaml.safe_load(open('params.yaml'))
-    TRAIN = Train(
-        data=pandas.read_csv(
-            PARAMS['data'],
+def main():
+    """Main
+    """
+
+    with open('params.yaml', 'r', encoding='utf-8') as file:
+        params = yaml.safe_load(file)
+
+    train = Train(
+        data=pd.read_csv(
+            params['data'],
         ),
-        features=PARAMS['features'],
-        params=PARAMS['train'],
+        features=params['features'],
+        params=params['train'],
     )
-    TRAIN.run()
+    train.run()
+
+
+if __name__ == '__main__':
+    main()
